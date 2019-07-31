@@ -1,0 +1,137 @@
+type Project {
+    id: ID! @unique @id
+    clientId: ID @unique
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+
+    accounts: [Account!]! @relation(name: "ProjectAccounts", onDelete: CASCADE)
+    messages: [Message!]! @relation(name: "ProjectMessages", onDelete: CASCADE)
+    persons: [Person!]! @relation(name: "ProjectPersons", onDelete: CASCADE)
+
+    name: String! @unique
+}
+
+type Account {
+    id: ID! @unique @id
+    clientId: ID @unique
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+    lastSeenAt: DateTime!
+    deletedAt: DateTime
+
+    project: Project! @relation(name: "ProjectAccounts")
+    person: Person! @relation(name: "AccountPerson", onDelete: SET_NULL, link: TABLE)
+
+    reset_password_token: String
+    reset_password_exp_date: DateTime
+
+    username: String! @unique
+    hash: String!
+
+    need_onboarding: Boolean! @default(value: true)
+    email_validated: Boolean! @default(value: false)
+    emailConfirmToken: String
+}
+
+enum CHANNEL {
+    NOTE
+    INTERCOM
+    MAIL
+    SLACK
+    ZENDESK
+    SHEET
+    FORM
+}
+
+enum MESSAGE_TYPE {
+    NOTE
+    MESSAGE
+}
+
+type Submessage {
+    id: ID! @unique @id
+    clientId: ID @unique
+    createdAt: DateTime! @createdAt # date it was created on harvestr
+    updatedAt: DateTime! @updatedAt
+    receivedAt: DateTime # real reception date
+    message: Message! @relation(name: "MessageSubmessages")
+
+    submitter: Person!
+
+    integration_id: String
+    type: MESSAGE_TYPE! @default(value: MESSAGE)
+    content: String! @default(value: "")
+}
+
+type Message {
+    id: ID! @unique @id
+    clientId: ID @unique
+    createdAt: DateTime! @createdAt # date it was created on harvestr
+    updatedAt: DateTime! @updatedAt
+    receivedAt: DateTime # real reception date
+    _projectId: ID
+
+    project: Project! @relation(name: "ProjectMessages")
+
+    sub_messages: [Submessage!]!
+        @relation(name: "MessageSubmessages", onDelete: CASCADE)
+    submitter: Person! @relation(name: "MessageSubmitter")
+    requester: Person @relation(name: "MessageRequester")
+    ccs: [Person!]! @relation(name: "MessageCcs")
+
+    integration_url: String
+    integration_id: String
+    title: String! @default(value: "")
+    content: String! @default(value: "")
+    channel: CHANNEL! @default(value: NOTE)
+
+    read: Boolean! @default(value: false)
+    updated: Boolean! @default(value: false)
+    archived: Boolean! @default(value: false)
+    processed: Boolean! @default(value: false)
+}
+
+enum PERSON_TYPE {
+    COLLABORATOR
+    CUSTOMER
+}
+
+enum RIGHT {
+    ADMIN
+    AGENT
+    VIEWER
+}
+
+type ProjectRight {
+    id: ID! @unique @id
+    project: Project!
+    right: RIGHT!
+
+    person: Person @relation(name: "PersonRights", link: TABLE)
+}
+
+type Person {
+    id: ID! @unique @id
+    clientId: ID @unique
+    createdAt: DateTime! @createdAt
+    updatedAt: DateTime! @updatedAt
+    _projectId: ID
+
+    project: Project! @relation(name: "ProjectPersons")
+
+    right: ProjectRight @relation(name: "PersonRights", onDelete: CASCADE)
+
+    submitted_messages: [Message!]! @relation(name: "MessageSubmitter")
+    requested_messages: [Message!]! @relation(name: "MessageRequester")
+    cc_messages: [Message!]! @relation(name: "MessageCcs")
+
+    account: Account @relation(name: "AccountPerson")
+
+    deleted: Boolean! @default(value: false)
+    type: PERSON_TYPE! @default(value: CUSTOMER)
+    name: String!
+    email: String
+    details: String
+    phone: String
+    zendesk_url: String
+}
