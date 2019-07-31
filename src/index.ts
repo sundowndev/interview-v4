@@ -49,90 +49,20 @@ const Person = prismaObjectType({
 
 const Query = queryType({
   definition(t) {
-    // t.list.field('filterPosts', {
-    //   type: 'Post',
-    //   args: {
-    //     searchString: stringArg({ nullable: true }),
-    //   },
-    //   resolve: (parent, { searchString }, ctx) => {
-    //     return ctx.prisma.posts({
-    //       where: {
-    //         OR: [
-    //           { title_contains: searchString },
-    //           { content_contains: searchString },
-    //         ],
-    //       },
-    //     });
-    //   },
-    // });
-    // t.field('post', {
-    //   type: 'Post',
-    //   nullable: true,
-    //   args: { id: idArg() },
-    //   resolve: (parent, { id }, ctx) => {
-    //     return ctx.prisma.post({ id });
-    //   },
-    // });
+    t.field('userMessages', {
+      type: 'Message',
+      nullable: true,
+      args: { clientId: idArg() },
+      resolve: (parent, { clientId }, ctx) => {
+        return ctx.prisma.messages({ where: { clientId } });
+      },
+    });
   },
 });
 
 const Mutation = prismaObjectType({
   name: 'Mutation',
-  definition(t) {
-    // t.field('signupUser', {
-    //   type: 'User',
-    //   args: {
-    //     name: stringArg({ nullable: true }),
-    //     email: stringArg(),
-    //   },
-    //   resolve: (parent, { name, email }, ctx) => {
-    //     return ctx.prisma.createUser({
-    //       name,
-    //       email,
-    //     });
-    //   },
-    // });
-    // t.field('createDraft', {
-    //   type: 'Post',
-    //   args: {
-    //     title: stringArg(),
-    //     content: stringArg({ nullable: true }),
-    //     authorEmail: stringArg(),
-    //   },
-    //   resolve: (parent, { title, content, authorEmail }, ctx) => {
-    //     return ctx.prisma.createPost({
-    //       title,
-    //       content,
-    //       author: {
-    //         connect: { email: authorEmail },
-    //       },
-    //     });
-    //   },
-    // });
-    // t.field('deletePost', {
-    //   type: 'Post',
-    //   nullable: true,
-    //   args: {
-    //     id: idArg(),
-    //   },
-    //   resolve: (parent, { id }, ctx) => {
-    //     return ctx.prisma.deletePost({ id });
-    //   },
-    // });
-    // t.field('publish', {
-    //   type: 'Post',
-    //   nullable: true,
-    //   args: {
-    //     id: idArg(),
-    //   },
-    //   resolve: (parent, { id }, ctx) => {
-    //     return ctx.prisma.updatePost({
-    //       where: { id },
-    //       data: { published: true },
-    //     });
-    //   },
-    // });
-  },
+  definition(t) {},
 });
 
 const schema = makePrismaSchema({
